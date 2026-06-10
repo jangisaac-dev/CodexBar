@@ -205,6 +205,16 @@ enum CostUsagePricing {
     }
 
     private static let claude: [String: ClaudePricing] = [
+        "claude-fable-5": ClaudePricing(
+            inputCostPerToken: 1e-5,
+            outputCostPerToken: 5e-5,
+            cacheCreationInputCostPerToken: 1.25e-5,
+            cacheReadInputCostPerToken: 1e-6,
+            thresholdTokens: nil,
+            inputCostPerTokenAboveThreshold: nil,
+            outputCostPerTokenAboveThreshold: nil,
+            cacheCreationInputCostPerTokenAboveThreshold: nil,
+            cacheReadInputCostPerTokenAboveThreshold: nil),
         "claude-haiku-4-5-20251001": ClaudePricing(
             inputCostPerToken: 1e-6,
             outputCostPerToken: 5e-6,

@@ -2,6 +2,9 @@
 
 ## 0.32.6 — Unreleased
 
+### Fixed
+- Claude: add bundled Fable 5 pricing so cost totals remain available before the models.dev cache refreshes (#1368). Thanks @MoollaMore!
+
 ## 0.32.5 — 2026-06-09
 
 ### Added

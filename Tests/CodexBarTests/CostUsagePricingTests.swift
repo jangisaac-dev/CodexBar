@@ -377,6 +377,20 @@ struct CostUsagePricingTests {
     }
 
     @Test
+    func `claude cost supports fable5 bundled fallback`() throws {
+        let emptyCacheRoot = try Self.cacheRoot()
+        let cost = CostUsagePricing.claudeCostUSD(
+            model: "claude-fable-5",
+            inputTokens: 100,
+            cacheReadInputTokens: 20,
+            cacheCreationInputTokens: 10,
+            outputTokens: 5,
+            modelsDevCacheRoot: emptyCacheRoot)
+        let expected = (100.0 * 1e-5) + (20.0 * 1e-6) + (10.0 * 1.25e-5) + (5.0 * 5e-5)
+        #expect(cost == expected)
+    }
+
+    @Test
     func `claude cost returns nil for unknown models`() {
         let cost = CostUsagePricing.claudeCostUSD(
             model: "glm-4.6",

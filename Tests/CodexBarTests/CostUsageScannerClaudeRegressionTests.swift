@@ -207,6 +207,46 @@ struct CostUsageScannerClaudeRegressionTests {
     }
 
     @Test
+    func `claude fable 5 issue row gets priced`() throws {
+        let env = try CostUsageTestEnvironment()
+        defer { env.cleanup() }
+
+        let day = try env.makeLocalNoon(year: 2026, month: 6, day: 9)
+        let fileURL = try env.writeClaudeProjectFile(
+            relativePath: "project-a/fable-5.jsonl",
+            contents: env.jsonl([
+                [
+                    "message": [
+                        "model": "claude-fable-5",
+                        "id": "msg_fable_5",
+                        "type": "message",
+                        "role": "assistant",
+                        "usage": [
+                            "input_tokens": 100,
+                            "cache_creation_input_tokens": 10,
+                            "cache_read_input_tokens": 20,
+                            "output_tokens": 5,
+                        ],
+                    ],
+                    "requestId": "req_fable_5",
+                    "type": "assistant",
+                    "timestamp": "2026-06-09T12:00:00.000Z",
+                    "sessionId": "session_fable_5",
+                ],
+            ]))
+
+        let parsed = CostUsageScanner.parseClaudeFile(
+            fileURL: fileURL,
+            range: CostUsageScanner.CostUsageDayRange(since: day, until: day),
+            providerFilter: .all)
+
+        #expect(parsed.rows.count == 1)
+        #expect(parsed.rows[0].model == "claude-fable-5")
+        let expected = 0.001395
+        #expect(abs((Double(parsed.rows[0].costNanos) / 1_000_000_000) - expected) < 0.000000001)
+    }
+
+    @Test
     func `claude streaming keeps the last cumulative chunk`() throws {
         let env = try CostUsageTestEnvironment()
         defer { env.cleanup() }
