@@ -167,5 +167,27 @@ struct BrowserCookieAccessGateTests {
         #expect(backgroundDisallowed)
         #expect(userInitiatedDisallowed == false)
     }
+
+    @Test
+    func `preserved access context keeps the explicit retry across a detached task`() async throws {
+        BrowserCookieAccessGate.resetForTesting()
+        defer { BrowserCookieAccessGate.resetForTesting() }
+
+        let preserved = BrowserCookieAccessGate.withExplicitRetry {
+            ProviderInteractionContext.$current.withValue(.userInitiated) {
+                BrowserCookieAccessGate.operationPreservingAccessContext(forwarding: { (browser: Browser) in
+                    KeychainAccessGate.withTaskOverrideForTesting(false) {
+                        KeychainAccessPreflight.withCheckGenericPasswordOverrideForTesting { _, _ in
+                            .interactionRequired
+                        } operation: {
+                            BrowserCookieAccessGate.shouldAttempt(browser)
+                        }
+                    }
+                })
+            }
+        }
+
+        #expect(try await Task.detached { try preserved(.chrome) }.value)
+    }
 }
 #endif
