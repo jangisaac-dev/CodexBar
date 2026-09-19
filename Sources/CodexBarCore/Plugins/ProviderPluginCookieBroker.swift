@@ -8,21 +8,13 @@ enum ProviderPluginCookieBroker {
     static func resolver(context: ProviderFetchContext) -> ProviderPluginRuntime.CookieResolver {
         let settings = context.settings
         let browserDetection = context.browserDetection
-        let resolve: @Sendable ((UsageProvider, String)) throws -> String = { request in
+        return { provider, domain in
             try self.cookieHeader(
-                provider: request.0,
-                domain: request.1,
+                provider: provider,
+                domain: domain,
                 settings: settings,
                 browserDetection: browserDetection)
         }
-        #if os(macOS)
-        // The plugin runtime resolves cookies from a detached task, which drops task-locals. Keep the refresh's
-        // interaction and explicit-retry scope so a user-initiated refresh can show the Keychain prompt.
-        let preserved = BrowserCookieAccessGate.operationPreservingAccessContext(forwarding: resolve)
-        #else
-        let preserved = resolve
-        #endif
-        return { provider, domain in try preserved((provider, domain)) }
     }
 
     private static func cookieHeader(

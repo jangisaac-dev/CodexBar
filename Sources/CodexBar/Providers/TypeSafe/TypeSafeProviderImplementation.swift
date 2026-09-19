@@ -27,7 +27,19 @@ struct TypeSafeProviderImplementation: ProviderImplementation {
                     auto: "Automatic imports Chrome cookies from typesafe.ai.",
                     manual: "Paste a Cookie header captured from the TypeSafe billing page.",
                     off: "TypeSafe cookies are disabled.")
-            })]
+            },
+            trailingText: {
+                ProviderCookieRefreshAction.trailingText(
+                    provider: .typesafe,
+                    cookieSource: context.settings.typesafeCookieSource,
+                    context: context)
+            },
+            trailingActions: [
+                ProviderCookieRefreshAction.descriptor(
+                    provider: .typesafe,
+                    cookieSource: { context.settings.typesafeCookieSource },
+                    context: context),
+            ])]
     }
 
     @MainActor

@@ -22,18 +22,7 @@ public enum TypeSafeProviderDescriptor {
     }
 
     static func makeDescriptor(transport: any ProviderHTTPTransport = ProviderHTTPClient.shared) -> ProviderDescriptor {
-        let strategy = ScriptFetchStrategy(
-            id: "typesafe.js",
-            provider: .typesafe,
-            bundledPlugin: "typesafe",
-            sourceLabel: "web",
-            kind: .web,
-            transport: transport,
-            resolveValues: { context in
-                guard context.settings?.typesafe?.cookieSource != .off else { return nil }
-                return ScriptFetchStrategy.Values()
-            },
-            isEnabled: { _ in true })
+        let strategy = TypeSafeWebFetchStrategy(transport: transport)
 
         return ProviderDescriptor(
             id: .typesafe,

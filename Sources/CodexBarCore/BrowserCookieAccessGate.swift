@@ -189,19 +189,12 @@ public enum BrowserCookieAccessGate {
     static func operationPreservingAccessContext<T: Sendable>(
         _ operation: @escaping @Sendable () throws -> T) -> @Sendable () throws -> T
     {
-        let preserved = self.operationPreservingAccessContext(forwarding: { (_: Void) in try operation() })
-        return { try preserved(()) }
-    }
-
-    static func operationPreservingAccessContext<Input, T: Sendable>(
-        forwarding operation: @escaping @Sendable (Input) throws -> T) -> @Sendable (Input) throws -> T
-    {
         let interaction = ProviderInteractionContext.current
         let retryScope = self.explicitRetryScope
-        return { input in
+        return {
             try ProviderInteractionContext.$current.withValue(interaction) {
                 try self.$explicitRetryScope.withValue(retryScope) {
-                    try operation(input)
+                    try operation()
                 }
             }
         }
