@@ -2,6 +2,7 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
+#if os(macOS)
 import SweetCookieKit
 import Testing
 @testable import CodexBarCore
@@ -51,11 +52,9 @@ struct TypeSafeCookieStrategyTests {
         if case .exact = query.domainMatch {} else { Issue.record("expected exact domain matching") }
         #expect(!query.includeExpired)
         #expect(query.referenceDate == now)
-        #if os(macOS)
         #expect(TypeSafeCookieImporter.resolvedImportOrder(nil) == [.chrome])
         #expect(TypeSafeCookieImporter.resolvedImportOrder([]) == [.chrome])
         #expect(TypeSafeCookieImporter.resolvedImportOrder([.safari]) == [.safari])
-        #endif
     }
 
     @Test
@@ -347,3 +346,4 @@ private struct TypeSafeCookieStrategyClaudeFetcher: ClaudeUsageFetching {
 
     func debugRawProbe(model _: String) async -> String { "unused" }
 }
+#endif

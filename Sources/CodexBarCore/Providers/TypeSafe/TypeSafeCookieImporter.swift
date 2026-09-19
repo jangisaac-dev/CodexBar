@@ -1,4 +1,6 @@
 import Foundation
+
+#if os(macOS)
 import SweetCookieKit
 
 enum TypeSafeCookieImporter {
@@ -27,7 +29,6 @@ enum TypeSafeCookieImporter {
             referenceDate: referenceDate)
     }
 
-    #if os(macOS)
     private static let cookieClient = BrowserCookieClient()
 
     static func resolvedImportOrder(_ preferredBrowsers: [Browser]?) -> [Browser] {
@@ -59,5 +60,5 @@ enum TypeSafeCookieImporter {
         guard !sessions.isEmpty else { throw TypeSafeCredentialError.missingCookie }
         return sessions
     }
-    #endif
 }
+#endif
