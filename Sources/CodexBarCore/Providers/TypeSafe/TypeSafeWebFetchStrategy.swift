@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 struct TypeSafeResolvedSession: Sendable {
     let cookieHeader: String
@@ -25,7 +28,7 @@ final class TypeSafeWebFetchStrategy: ProviderFetchStrategy, @unchecked Sendable
     private var runtime: ProviderPluginRuntime?
 
     init(
-        transport: any ProviderHTTPTransport = ProviderHTTPClient.shared,
+        transport: any ProviderHTTPTransport = TypeSafeWebFetchStrategy.isolatedTransport,
         usageLoader: UsageLoader? = nil,
         sessionLoader: @escaping SessionLoader = TypeSafeWebFetchStrategy.loadSessions,
         cacheLoader: @escaping CacheLoader = { CookieHeaderCache.observeForConditionalMutation(provider: .typesafe) },
@@ -44,6 +47,19 @@ final class TypeSafeWebFetchStrategy: ProviderFetchStrategy, @unchecked Sendable
         self.cacheLoader = cacheLoader
         self.cacheClearer = cacheClearer
         self.cacheWriter = cacheWriter
+    }
+
+    /// The selected Cookie header is the only credential: no shared jar may add or persist cookies.
+    static let isolatedTransport = ProviderHTTPClient(
+        session: ProviderHTTPClient.redirectGuardedSession(configuration: TypeSafeWebFetchStrategy.makeConfiguration()))
+
+    static func makeConfiguration() -> URLSessionConfiguration {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 30
+        configuration.timeoutIntervalForResource = 90
+        configuration.httpCookieStorage = nil
+        configuration.httpShouldSetCookies = false
+        return configuration
     }
 
     func isAvailable(_ context: ProviderFetchContext) async -> Bool {

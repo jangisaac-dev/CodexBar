@@ -19,6 +19,14 @@ struct TypeSafeCookieStrategyTests {
     }
 
     @Test
+    func `production transport never reads or stores ambient cookies`() {
+        let configuration = TypeSafeWebFetchStrategy.makeConfiguration()
+
+        #expect(configuration.httpCookieStorage == nil)
+        #expect(configuration.httpShouldSetCookies == false)
+    }
+
+    @Test
     func `cookie records are limited to the billing destination`() {
         let records = [
             Self.record("console.typesafe.ai", scope: .hostOnly, name: "host-console"),

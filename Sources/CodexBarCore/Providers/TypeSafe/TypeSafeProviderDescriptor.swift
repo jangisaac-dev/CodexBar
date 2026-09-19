@@ -21,7 +21,9 @@ public enum TypeSafeProviderDescriptor {
         #endif
     }
 
-    static func makeDescriptor(transport: any ProviderHTTPTransport = ProviderHTTPClient.shared) -> ProviderDescriptor {
+    static func makeDescriptor(
+        transport: any ProviderHTTPTransport = TypeSafeWebFetchStrategy.isolatedTransport) -> ProviderDescriptor
+    {
         let strategy = TypeSafeWebFetchStrategy(transport: transport)
 
         return ProviderDescriptor(
