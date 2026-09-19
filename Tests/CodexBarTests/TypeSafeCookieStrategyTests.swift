@@ -140,6 +140,39 @@ struct TypeSafeCookieStrategyTests {
         #expect(log.values == ["session=stale", "session=expired", "session=valid", "stored"])
     }
 
+    @Test
+    func `real plugin recovers a rejected cached session from the browser`() async throws {
+        let requests = RequestLog()
+        let log = Log()
+        let cached = CookieHeaderCache.Entry(
+            cookieHeader: "session=stale",
+            storedAt: TypeSafePluginTests.now,
+            sourceLabel: "old")
+        let strategy = TypeSafeWebFetchStrategy(
+            transport: ProviderHTTPTransportHandler { request in
+                await requests.append(request)
+                if request.value(forHTTPHeaderField: "Cookie") == "session=stale" {
+                    return try Self.response(request, status: 307, body: "", contentType: "text/html")
+                }
+                return try Self.pluginResponse(for: request)
+            },
+            sessionLoader: { _ in [.init(cookieHeader: "session=fresh", sourceLabel: "Chrome")] },
+            cacheLoader: { .authoritative(cached) },
+            cacheClearer: { expected in #expect(expected == cached); log.append("cleared"); return true },
+            cacheWriter: { expected, session in
+                #expect(expected.entry == nil)
+                log.append("stored \(session.cookieHeader)")
+            })
+
+        let result = try await strategy.fetch(Self.context(.auto))
+
+        #expect(result.usage.providerCost?.balance == 4.98)
+        #expect(log.values == ["cleared", "stored session=fresh"])
+        let cookies = await requests.all.filter { $0.httpMethod != nil && $0.url?.path == "/settings/billing" }
+            .map { $0.value(forHTTPHeaderField: "Cookie") }
+        #expect(cookies == ["session=stale", "session=fresh", "session=fresh"])
+    }
+
     @Test(arguments: [ProviderFetchClassifiedError.Kind.networkFailure, .parseFailure, .rateLimited])
     func `non authentication failures preserve cache without importing`(kind: ProviderFetchClassifiedError.Kind) async {
         let error = ProviderFetchClassifiedError(kind: kind, message: "fixture")
