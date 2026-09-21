@@ -169,6 +169,7 @@ See [CLI configuration](docs/cli-configuration.md) for the full flow.
 - [Hugging Face](docs/huggingface.md) — Access token for Inference Providers charges and optional ZeroGPU quota.
 - [Pi](docs/pi.md) — Local Pi/OMP transcripts for token history and API-rate cost estimates.
 - [v0](docs/v0.md) — Platform API key for billing and on-demand balances, plus rate limits.
+- [TypeSafe](docs/typesafe.md) — Chrome or manual console cookies for billing spend, balance, and credit expirations.
 - Open to new providers: [provider authoring guide](docs/provider.md).
 
 ## Icon & Screenshot
